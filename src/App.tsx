@@ -397,21 +397,13 @@ function App() {
                   />
                 </div>
                 <div>
-                  <select name="suburb" required className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all">
-                    <option value="">Select Your Suburb</option>
-                    <option value="Castle Hill">Castle Hill</option>
-                    <option value="Baulkham Hills">Baulkham Hills</option>
-                    <option value="Kellyville">Kellyville</option>
-                    <option value="Rouse Hill">Rouse Hill</option>
-                    <option value="Cherrybrook">Cherrybrook</option>
-                    <option value="Pennant Hills">Pennant Hills</option>
-                    <option value="West Pennant Hills">West Pennant Hills</option>
-                    <option value="Carlingford">Carlingford</option>
-                    <option value="Dural">Dural</option>
-                    <option value="Glenhaven">Glenhaven</option>
-                    <option value="Box Hill">Box Hill</option>
-                    <option value="Gables">Gables</option>
-                  </select>
+                  <input
+                    type="text"
+                    name="suburb"
+                    placeholder="Your Suburb"
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                  />
                 </div>
                 <div>
                   <textarea 
