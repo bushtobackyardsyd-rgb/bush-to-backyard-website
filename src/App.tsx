@@ -3,6 +3,7 @@ import { Phone, Mail, MapPin, Star, ArrowRight } from 'lucide-react';
 
 function App() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [selectedProject, setSelectedProject] = useState<number | null>(null);
 
   const services = [
     {
@@ -219,14 +220,14 @@ function App() {
                      console.log('Instagram link clicked - URL:', project.instagramUrl);
                    } : undefined}>
                 <div className="relative h-64 overflow-hidden">
-                  <img 
-                    src={project.image} 
+                  <img
+                    src={project.image}
                     alt={project.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-medium ${
-                    project.isInstagramLink 
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' 
+                    project.isInstagramLink
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
                       : 'bg-emerald-600 text-white'
                   }`}>
                     {project.location}
@@ -238,11 +239,18 @@ function App() {
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-800 mb-2">{project.title}</h3>
                   <p className="text-gray-600 leading-relaxed mb-4">{project.description}</p>
-                  <button className={`font-semibold transition-colors flex items-center space-x-1 ${
-                    project.isInstagramLink 
-                      ? 'text-purple-600 hover:text-purple-700' 
-                      : 'text-emerald-600 hover:text-emerald-700'
-                  }`}>
+                  <button
+                    onClick={(e) => {
+                      if (!project.isInstagramLink) {
+                        e.stopPropagation();
+                        setSelectedProject(index);
+                      }
+                    }}
+                    className={`font-semibold transition-colors flex items-center space-x-1 ${
+                      project.isInstagramLink
+                        ? 'text-purple-600 hover:text-purple-700'
+                        : 'text-emerald-600 hover:text-emerald-700'
+                    }`}>
                     <span>{project.isInstagramLink ? 'Follow on Instagram' : 'View Details'}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
@@ -252,6 +260,56 @@ function App() {
           </div>
         </div>
       </section>
+
+      {/* Project Modal */}
+      {selectedProject !== null && !projects[selectedProject].isInstagramLink && (
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedProject(null)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative">
+              <img
+                src={projects[selectedProject].image}
+                alt={projects[selectedProject].title}
+                className="w-full h-96 object-cover"
+              />
+              <button
+                onClick={() => setSelectedProject(null)}
+                className="absolute top-4 right-4 bg-white/90 hover:bg-white text-gray-800 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110"
+              >
+                <span className="text-2xl leading-none">&times;</span>
+              </button>
+              <div className="absolute bottom-4 left-4 px-4 py-2 bg-emerald-600 text-white rounded-full text-sm font-medium">
+                {projects[selectedProject].location}
+              </div>
+            </div>
+            <div className="p-8">
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">{projects[selectedProject].title}</h2>
+              <p className="text-lg text-gray-600 leading-relaxed mb-6">{projects[selectedProject].description}</p>
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">Interested in a similar project?</h3>
+                <button
+                  onClick={() => {
+                    setSelectedProject(null);
+                    const contactSection = document.getElementById('contact');
+                    if (contactSection) {
+                      contactSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="bg-emerald-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-emerald-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2"
+                >
+                  <span>Get Your Free Quote</span>
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Testimonials Section */}
       <section id="testimonials" className="py-20 bg-emerald-50">
