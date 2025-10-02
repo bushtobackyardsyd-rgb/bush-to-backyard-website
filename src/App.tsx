@@ -4,6 +4,8 @@ import { Phone, Mail, MapPin, Star, ArrowRight } from 'lucide-react';
 function App() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const services = [
     {
@@ -405,27 +407,64 @@ function App() {
             
             <div className="bg-white rounded-2xl p-8 text-gray-800">
               <h3 className="text-2xl font-bold mb-6">Get Your Free Quote</h3>
-              <form className="space-y-4" onSubmit={(e) => {
+              {submitMessage && (
+                <div className={`mb-4 p-4 rounded-lg ${
+                  submitMessage.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {submitMessage.text}
+                </div>
+              )}
+              <form className="space-y-4" onSubmit={async (e) => {
                 e.preventDefault();
+                setIsSubmitting(true);
+                setSubmitMessage(null);
+
                 const formData = new FormData(e.target as HTMLFormElement);
-                const name = formData.get('name') as string;
-                const email = formData.get('email') as string;
-                const phone = formData.get('phone') as string;
-                const suburb = formData.get('suburb') as string;
-                const project = formData.get('project') as string;
-                
-                const subject = encodeURIComponent('Free Quote Request - Bush to Backyard');
-                const body = encodeURIComponent(
-                  `New quote request from ${name}\n\n` +
-                  `Contact Details:\n` +
-                  `Name: ${name}\n` +
-                  `Email: ${email}\n` +
-                  `Phone: ${phone}\n` +
-                  `Suburb: ${suburb}\n\n` +
-                  `Project Description:\n${project}`
-                );
-                
-                window.location.href = `mailto:info@BushtoBackyard.com.au?subject=${subject}&body=${body}`;
+                const data = {
+                  name: formData.get('name') as string,
+                  email: formData.get('email') as string,
+                  phone: formData.get('phone') as string,
+                  suburb: formData.get('suburb') as string,
+                  project: formData.get('project') as string,
+                };
+
+                try {
+                  const response = await fetch(
+                    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-quote-email`,
+                    {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+                      },
+                      body: JSON.stringify(data),
+                    }
+                  );
+
+                  const result = await response.json();
+
+                  if (response.ok && result.success) {
+                    setSubmitMessage({
+                      type: 'success',
+                      text: 'Thank you! Your quote request has been sent successfully. We\'ll get back to you soon!'
+                    });
+                    (e.target as HTMLFormElement).reset();
+                  } else {
+                    setSubmitMessage({
+                      type: 'error',
+                      text: result.error || 'Failed to send request. Please try again or contact us directly.'
+                    });
+                  }
+                } catch (error) {
+                  setSubmitMessage({
+                    type: 'error',
+                    text: 'An error occurred. Please contact us at info@bushtobackyard.com.au or call 0481 446 789'
+                  });
+                } finally {
+                  setIsSubmitting(false);
+                }
               }}>
                 <div>
                   <input 
@@ -472,9 +511,13 @@ function App() {
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all resize-none"
                   ></textarea>
                 </div>
-                <button type="submit" className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2">
-                  <span>Send Message</span>
-                  <ArrowRight className="w-5 h-5" />
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
+                  {!isSubmitting && <ArrowRight className="w-5 h-5" />}
                 </button>
               </form>
             </div>
